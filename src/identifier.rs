@@ -56,11 +56,11 @@ impl Identifier {
     /// TryInto::<Identifier>::try_into(".a12ab").expect_err("Malformed identifier not caught");
     /// ```
     pub fn try_new(value: String) -> Result<Self> {
-        return if Identifier::is_valid(&value) {
+        if Identifier::is_valid(&value) {
             Ok(Identifier(value))
         } else {
             arg_err_noloc!(MalformedIdentifierErr(value.clone()))
-        };
+        }
     }
 }
 
