@@ -27,8 +27,6 @@ pub struct Identifier(String);
 
 impl Identifier {
     /// Checks if [Identifier] can be constructed from [&str].
-    ///
-    /// Const so check can be done at compile time. See the `identifier!` macro.
     pub const fn is_valid(s: &str) -> bool {
         let b = s.as_bytes();
         if b.is_empty() {
@@ -64,19 +62,6 @@ impl Identifier {
             arg_err_noloc!(MalformedIdentifierErr(value.clone()))
         };
     }
-}
-
-/// Attempt to construct a new [Identifier] from a literal.
-/// Invalid literals are rejected at compile time.
-#[macro_export]
-macro_rules! identifier {
-    ($s:literal) => {{
-        const _: () = assert!(
-            $crate::identifier::Identifier::is_valid($s),
-            "not a valid identifier",
-        );
-        $crate::identifier::Identifier::try_new($s.into()).expect("checked above at compile time")
-    }};
 }
 
 impl Add for Identifier {
