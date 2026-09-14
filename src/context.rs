@@ -457,6 +457,11 @@ macro_rules! dict_key {
         // to ensure that all keys are unique.
         // The static variable is created in a separate anonymous module.
         const _: () = {
+            assert!(
+                $crate::identifier::Identifier::is_valid($name),
+                "dict_key! name is not a valid identifier",
+            );
+
             #[cfg_attr(not(target_family = "wasm"),
                 ::pliron::linkme::distributed_slice(::pliron::context::DICT_KEY_IDS), linkme(crate = ::pliron::linkme))]
             pub static $decl: $crate::std_deps::sync::LazyLock<::pliron::context::DictKeyId> =

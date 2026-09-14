@@ -26,6 +26,27 @@ use crate::{
 pub struct Identifier(String);
 
 impl Identifier {
+    /// Checks if [Identifier] can be constructed from [&str].
+    ///
+    /// Const so check can be done at compile time. See the `identifier!` macro.
+    pub const fn is_valid(s: &str) -> bool {
+        let b = s.as_bytes();
+        if b.is_empty() {
+            return false;
+        }
+        if !(b[0].is_ascii_alphabetic() || b[0] == b'_') {
+            return false;
+        }
+        let mut i = 1;
+        while i < b.len() {
+            if !(b[i].is_ascii_alphanumeric() || b[i] == b'_') {
+                return false;
+            }
+            i += 1;
+        }
+        true
+    }
+
     /// Attempt to construct a new [Identifier] from a [String].
     /// Examples:
     /// ```
@@ -37,19 +58,25 @@ impl Identifier {
     /// TryInto::<Identifier>::try_into(".a12ab").expect_err("Malformed identifier not caught");
     /// ```
     pub fn try_new(value: String) -> Result<Self> {
-        let mut chars_iter = value.chars();
-        match chars_iter.next() {
-            Some(first_char) if (first_char.is_ascii_alphabetic() || first_char == '_') => {
-                if !chars_iter.all(|c| c.is_ascii_alphanumeric() || c == '_') {
-                    return arg_err_noloc!(MalformedIdentifierErr(value.clone()));
-                }
-            }
-            _ => {
-                return arg_err_noloc!(MalformedIdentifierErr(value.clone()));
-            }
-        }
-        Ok(Identifier(value))
+        return if Identifier::is_valid(&value) {
+            Ok(Identifier(value))
+        } else {
+            arg_err_noloc!(MalformedIdentifierErr(value.clone()))
+        };
     }
+}
+
+/// Attempt to construct a new [Identifier] from a literal.
+/// Invalid literals are rejected at compile time.
+#[macro_export]
+macro_rules! identifier {
+    ($s:literal) => {{
+        const _: () = assert!(
+            $crate::identifier::Identifier::is_valid($s),
+            "not a valid identifier",
+        );
+        $crate::identifier::Identifier::try_new($s.into()).expect("checked above at compile time")
+    }};
 }
 
 impl Add for Identifier {
