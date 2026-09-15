@@ -10,7 +10,8 @@ use crate::{
     common_traits::Named,
     context::{Context, Ptr},
     graph::traversals::region::post_order,
-    identifier::{Identifier, underscore},
+    ident,
+    identifier::Identifier,
     irbuild::{
         inserter::{BlockInsertionPoint, IRInserter, Inserter, OpInsertionPoint},
         listener::RewriteListener,
@@ -362,7 +363,7 @@ impl<L: RewriteListener> Rewriter for IRRewriter<L> {
             block
                 .deref(ctx)
                 .given_name(ctx)
-                .map(|label| label + underscore() + "split".try_into().unwrap())
+                .map(|label| label + ident!("_") + "split".try_into().unwrap())
         });
 
         let new_block =

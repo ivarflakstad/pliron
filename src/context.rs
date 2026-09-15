@@ -451,22 +451,17 @@ pub fn verify_dict_keys() -> Result<()> {
 #[macro_export]
 macro_rules! dict_key {
     (   $(#[$outer:meta])*
-        $decl:ident, $name:expr
+        $decl:ident, $name:literal
     ) => {
         // Create a static variable linked to the DICT_KEY_IDS slice
         // to ensure that all keys are unique.
         // The static variable is created in a separate anonymous module.
         const _: () = {
-            assert!(
-                $crate::identifier::Identifier::is_valid($name),
-                "dict_key! name is not a valid identifier",
-            );
-
             #[cfg_attr(not(target_family = "wasm"),
                 ::pliron::linkme::distributed_slice(::pliron::context::DICT_KEY_IDS), linkme(crate = ::pliron::linkme))]
             pub static $decl: $crate::std_deps::sync::LazyLock<::pliron::context::DictKeyId> =
                 $crate::std_deps::sync::LazyLock::new(|| ::pliron::context::DictKeyId {
-                    id: $name.try_into().unwrap(),
+                    id: $crate::ident!($name),
                     file: file!(),
                     line: line!(),
                     column: column!(),
@@ -480,7 +475,7 @@ macro_rules! dict_key {
         $(#[$outer])*
         // Create a static variable with the provided name to access the identifier.
         pub static $decl: $crate::std_deps::sync::LazyLock<::pliron::identifier::Identifier> =
-            $crate::std_deps::sync::LazyLock::new(|| $name.try_into().unwrap());
+            $crate::std_deps::sync::LazyLock::new(|| $crate::ident!($name));
     };
 }
 
